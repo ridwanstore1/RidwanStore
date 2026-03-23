@@ -1,0 +1,351 @@
+<!DOCTYPE html>  <html lang="id">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Ridwan Store - Belanja Mudah & Cepat</title>  
+    <script src="https://cdn.tailwindcss.com"></script>  
+    <script src="https://unpkg.com/lucide@latest"></script>  
+    <style>  
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');  body {  
+        font-family: 'Plus Jakarta Sans', sans-serif;  
+        scroll-behavior: smooth;  
+    }  
+
+    .cart-count {  
+        position: absolute;  
+        top: -8px;  
+        right: -8px;  
+        background: #ef4444;  
+        color: white;  
+        font-size: 10px;  
+        padding: 2px 6px;  
+        border-radius: 999px;  
+        font-weight: bold;  
+    }  
+
+    .modal-overlay {  
+        background-color: rgba(0, 0, 0, 0.5);  
+        backdrop-filter: blur(4px);  
+    }  
+
+    .product-card:hover img {  
+        transform: scale(1.05);  
+    }  
+
+    input:focus, textarea:focus {  
+        outline: none;  
+        border-color: #3b82f6;  
+        ring: 2px;  
+        ring-color: #3b82f6;  
+    }  
+</style>
+
+</head>  
+<body class="bg-slate-50 text-slate-900">  <!-- Header -->  
+<header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200">  
+    <div class="container mx-auto px-4 h-16 flex items-center justify-between">  
+        <div class="flex items-center gap-2">  
+            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white">  
+                <i data-lucide="shopping-bag"></i>  
+            </div>  
+            <h1 class="text-xl font-bold tracking-tight">Ridwan<span class="text-blue-600">Store</span></h1>  
+        </div>  
+
+        <div class="flex items-center gap-4">  
+            <button onclick="toggleCart()" class="relative p-2 text-slate-600 hover:text-blue-600 transition-colors">  
+                <i data-lucide="shopping-cart"></i>  
+                <span id="cart-counter" class="cart-count">0</span>  
+            </button>  
+        </div>  
+    </div>  
+</header>  
+
+<main class="container mx-auto px-4 py-8">  
+    <!-- Hero Section -->  
+    <section class="mb-12 text-center">  
+        <h2 class="text-3xl md:text-4xl font-extrabold mb-4">Produk Pilihan Terbaik</h2>  
+        <p class="text-slate-500 max-w-xl mx-auto">Temukan berbagai produk digital berkualitas dengan harga terjangkau. Pesan sekarang, bayar dengan QRIS, dan barang langsung kami proses.</p>  
+    </section>  
+
+    <!-- Product Grid -->  
+    <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">  
+        <!-- Products will be injected by JavaScript -->  
+    </div>  
+</main>  
+
+<!-- Cart Sidebar -->  
+<div id="cart-sidebar" class="fixed inset-0 z-50 hidden">  
+    <div class="modal-overlay absolute inset-0" onclick="toggleCart()"></div>  
+    <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col">  
+        <div class="p-6 border-b flex items-center justify-between">  
+            <h3 class="text-xl font-bold">Keranjang Belanja</h3>  
+            <button onclick="toggleCart()" class="p-2 hover:bg-slate-100 rounded-full">  
+                <i data-lucide="x"></i>  
+            </button>  
+        </div>  
+          
+        <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-4">  
+            <!-- Cart items go here -->  
+            <div id="empty-cart-msg" class="text-center py-12 text-slate-400">  
+                <i data-lucide="shopping-cart" class="mx-auto w-12 h-12 mb-4 opacity-20"></i>  
+                <p>Keranjang masih kosong</p>  
+            </div>  
+        </div>  
+
+        <div id="cart-footer" class="p-6 border-t bg-slate-50 hidden">  
+            <div class="flex justify-between items-center mb-6">  
+                <span class="text-slate-500">Total Pembayaran:</span>  
+                <span id="cart-total" class="text-2xl font-bold text-blue-600">Rp 0</span>  
+            </div>  
+            <button onclick="showCheckout()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-blue-200">  
+                Lanjut ke Pembayaran  
+            </button>  
+        </div>  
+    </div>  
+</div>  
+
+<!-- Checkout Modal -->  
+<div id="checkout-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">  
+    <div class="modal-overlay absolute inset-0" onclick="hideCheckout()"></div>  
+    <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative z-10 shadow-2xl">  
+        <div class="p-6 border-b flex items-center justify-between sticky top-0 bg-white">  
+            <h3 class="text-xl font-bold">Detail Pesanan & Pembayaran</h3>  
+            <button onclick="hideCheckout()" class="p-2 hover:bg-slate-100 rounded-full">  
+                <i data-lucide="x"></i>  
+            </button>  
+        </div>  
+
+        <div class="p-6">  
+            <!-- Form Pesanan -->  
+            <form action="https://formsubmit.co/ridwansukabluee@gmail.com" method="POST" id="order-form" enctype="multipart/form-data">  
+                <!-- Hidden Config for FormSubmit -->  
+                <input type="hidden" name="_subject" value="Pesanan Baru dari Bluee Store!">  
+                <input type="hidden" name="_template" value="table">  
+                <input type="hidden" name="_captcha" value="false">  
+                <input type="hidden" name="_next" value="javascript:alert('Pesanan berhasil dikirim! Kami akan segera memproses pesanan Anda.'); window.location.reload();">  
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">  
+                    <div class="space-y-4">  
+                        <h4 class="font-semibold text-blue-600 flex items-center gap-2">  
+                            <i data-lucide="user" class="w-4 h-4"></i> Informasi Pembeli  
+                        </h4>  
+                        <div>  
+                            <label class="block text-sm font-medium mb-1">Nama Lengkap</label>  
+                            <input type="text" name="Nama" required class="w-full p-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white transition-all">  
+                        </div>  
+                        <div>  
+                            <label class="block text-sm font-medium mb-1">No WhatsApp Yang aktif</label>  
+                            <input type="tel" name="No WhatsApp" required class="w-full p-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white transition-all">  
+                        </div>  
+                        <div>  
+                            
+                        </div>  
+                    </div>  
+
+                    <div class="space-y-4">  
+                        <h4 class="font-semibold text-blue-600 flex items-center gap-2">  
+                            <i data-lucide="qr-code" class="w-4 h-4"></i> Pembayaran QRIS  
+                        </h4>  
+                        <div class="bg-slate-100 p-4 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center">  
+                            <!-- QRIS Placeholder - Ganti URL di bawah dengan link foto QRIS Anda -->  
+                        <img src="https://i.ibb.co/bj9nhRJH/IMG-20260323-151757.jpg" alt="QRIS" class="w-48 h-48 mb-2 bg-white p-2 rounded-lg shadow-sm">
+                            <p class="text-[10px] text-slate-400 text-center uppercase tracking-widest font-bold">Scan untuk Membayar</p>  
+                            <p id="checkout-total-display" class="mt-2 text-lg font-bold text-slate-700">Total: Rp 0</p>  
+                        </div>  
+                        <div>  
+                            <label class="block text-sm font-medium mb-1">Upload Bukti Transfer</label>  
+                            <input type="file" name="Bukti_Pembayaran" accept="image/*" required class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">  
+                        </div>  
+                    </div>  
+                </div>  
+
+                <!-- Hidden field for order summary -->  
+                <input type="hidden" name="Detail_Pesanan" id="hidden-order-summary">  
+                <input type="hidden" name="Total_Harga" id="hidden-total-price">  
+
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-green-100 flex items-center justify-center gap-2">  
+                    <i data-lucide="send"></i>  
+                    Konfirmasi & Kirim Pesanan  
+                </button>  
+            </form>  
+        </div>  
+    </div>  
+</div>  
+
+<!-- Footer -->  
+<footer class="bg-slate-900 text-slate-400 py-12 mt-20">  
+    <div class="container mx-auto px-4">  
+        <div class="flex flex-col md:flex-row justify-between items-center gap-6">  
+            <div class="flex items-center gap-2">  
+                <div class="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white">  
+                    <i data-lucide="shopping-bag" class="w-4 h-4"></i>  
+                </div>  
+                <h2 class="text-white font-bold text-lg">RidwanStore</h2>  
+            </div>  
+            <p class="text-sm">© 2026 Ridwan Store. Semua Hak Dilindungi.</p>  
+            <div class="flex gap-4">  
+                <i data-lucide="instagram" class="w-5 h-5 cursor-pointer hover:text-white transition-colors"></i>  
+                <i data-lucide="facebook" class="w-5 h-5 cursor-pointer hover:text-white transition-colors"></i>  
+                <i data-lucide="twitter" class="w-5 h-5 cursor-pointer hover:text-white transition-colors"></i>  
+            </div>  
+        </div>  
+    </div>  
+</footer>  
+
+<script>  
+    // Data Produk  
+    const products = [  
+        { id: 1, name: "Capcut Pro 1 bulan", price: 10000, category: "Digital", img: "https://i.ibb.co/s9LHZHMW/images-4.png" },  
+        { id: 2, name: "Canva pro 1 bulan", price: 10000, category: "Aksesoris", img: "https://i.ibb.co/M5g1ZWrT/unnamed.webp" },  
+        { id: 3, name: "Canva pro Life time", price: 20000, category: "Audio", img: "https://i.ibb.co/QFjDLw4x/images-18.jpg" },  
+        { id: 4, name: "Spotify 1 bulan premium", price: 25000, category: "Aksesoris", img: "https://i.ibb.co/DDJJDJWB/spotify-newfronts-video-inventory-2024.jpg" },  
+        { id: 5, name: "Suntik view tiktok 300 + like 100", price: 1000, category: "Digital", img: "https://i.ibb.co/ZphRpp3z/images-17.jpg" },  
+        { id: 6, name: "Jasa Edit Foto / Video maksimal 1 menit", price: 10000, category: "Digital", img: "https://i.ibb.co/pB4z7gFF/Rekomendasi-Jasa-Edit-Video-di-Jogja.jpg" },  
+        { id: 7, name: "YouTube Premium", price: 5000, category: "Digital", img: "https://i.ibb.co/3y7wk4Mp/JGy-K91-Muqz.jpg" },  
+        { id: 8, name: "Alight Motion 1 tahun premium", price: 10000, category: "Digital", img: "https://i.ibb.co/LhDY3NmY/images-16.jpg" }  
+    ];  
+
+    let cart = [];  
+
+    // Inisialisasi Lucide Icons  
+    lucide.createIcons();  
+
+    // Render Produk  
+    function renderProducts() {  
+        const container = document.getElementById('product-list');  
+        container.innerHTML = products.map(p => `  
+            <div class="product-card bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1">  
+                <div class="h-48 overflow-hidden bg-slate-100">  
+                    <img src="${p.img}" alt="${p.name}" class="w-full h-full object-cover transition-transform duration-500">  
+                </div>  
+                <div class="p-5">  
+                    <span class="text-xs font-bold text-blue-600 uppercase tracking-widest">${p.category}</span>  
+                    <h3 class="text-lg font-bold mt-1 text-slate-800">${p.name}</h3>  
+                    <p class="text-xl font-extrabold text-slate-900 mt-2">${formatIDR(p.price)}</p>  
+                    <button onclick="addToCart(${p.id})" class="mt-4 w-full bg-slate-900 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2 group">  
+                        <i data-lucide="plus" class="w-4 h-4 group-hover:rotate-90 transition-transform"></i>  
+                        Tambah  
+                    </button>  
+                </div>  
+            </div>  
+        `).join('');  
+        lucide.createIcons();  
+    }  
+
+    // Format Rupiah  
+    function formatIDR(num) {  
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);  
+    }  
+
+    // Cart Logic  
+    function toggleCart() {  
+        const sidebar = document.getElementById('cart-sidebar');  
+        sidebar.classList.toggle('hidden');  
+    }  
+
+    function addToCart(productId) {  
+        const product = products.find(p => p.id === productId);  
+        const existing = cart.find(item => item.id === productId);  
+
+        if (existing) {  
+            existing.qty++;  
+        } else {  
+            cart.push({ ...product, qty: 1 });  
+        }  
+          
+        updateCartUI();  
+        // Animate counter  
+        const counter = document.getElementById('cart-counter');  
+        counter.classList.add('scale-125');  
+        setTimeout(() => counter.classList.remove('scale-125'), 200);  
+    }  
+
+    function removeFromCart(productId) {  
+        cart = cart.filter(item => item.id !== productId);  
+        updateCartUI();  
+    }  
+
+    function changeQty(productId, delta) {  
+        const item = cart.find(i => i.id === productId);  
+        if (item) {  
+            item.qty += delta;  
+            if (item.qty < 1) removeFromCart(productId);  
+            else updateCartUI();  
+        }  
+    }  
+
+    function updateCartUI() {  
+        const container = document.getElementById('cart-items');  
+        const counter = document.getElementById('cart-counter');  
+        const footer = document.getElementById('cart-footer');  
+        const totalEl = document.getElementById('cart-total');  
+        const emptyMsg = document.getElementById('empty-cart-msg');  
+
+        const totalCount = cart.reduce((sum, item) => sum + item.qty, 0);  
+        const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);  
+
+        counter.innerText = totalCount;  
+          
+        if (cart.length === 0) {  
+            container.innerHTML = '';  
+            container.appendChild(emptyMsg);  
+            emptyMsg.classList.remove('hidden');  
+            footer.classList.add('hidden');  
+        } else {  
+            emptyMsg.classList.add('hidden');  
+            footer.classList.remove('hidden');  
+            totalEl.innerText = formatIDR(totalPrice);  
+              
+            container.innerHTML = cart.map(item => `  
+                <div class="flex gap-4 bg-slate-50 p-3 rounded-xl border border-slate-100">  
+                    <img src="${item.img}" class="w-16 h-16 rounded-lg object-cover">  
+                    <div class="flex-1">  
+                        <h4 class="font-bold text-sm">${item.name}</h4>  
+                        <p class="text-blue-600 font-bold text-sm">${formatIDR(item.price)}</p>  
+                        <div class="flex items-center gap-3 mt-2">  
+                            <button onclick="changeQty(${item.id}, -1)" class="w-6 h-6 flex items-center justify-center bg-white border rounded-md text-slate-500 hover:text-blue-600">-</button>  
+                            <span class="text-xs font-bold">${item.qty}</span>  
+                            <button onclick="changeQty(${item.id}, 1)" class="w-6 h-6 flex items-center justify-center bg-white border rounded-md text-slate-500 hover:text-blue-600">+</button>  
+                        </div>  
+                    </div>  
+                    <button onclick="removeFromCart(${item.id})" class="text-slate-300 hover:text-red-500 transition-colors">  
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>  
+                    </button>  
+                </div>  
+            `).join('');  
+            lucide.createIcons();  
+        }  
+    }  
+
+    // Checkout Logic  
+    function showCheckout() {  
+        const modal = document.getElementById('checkout-modal');  
+        const totalDisplay = document.getElementById('checkout-total-display');  
+        const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);  
+          
+        totalDisplay.innerText = `Total: ${formatIDR(totalPrice)}`;  
+          
+        // Prepare order details for email  
+        const summary = cart.map(item => `${item.name} (x${item.qty}) - ${formatIDR(item.price * item.qty)}`).join('\n');  
+        document.getElementById('hidden-order-summary').value = summary;  
+        document.getElementById('hidden-total-price').value = formatIDR(totalPrice);  
+
+        modal.classList.remove('hidden');  
+        document.body.style.overflow = 'hidden';  
+        toggleCart(); // Close cart sidebar  
+    }  
+
+    function hideCheckout() {  
+        const modal = document.getElementById('checkout-modal');  
+        modal.classList.add('hidden');  
+        document.body.style.overflow = 'auto';  
+    }  
+
+    // Initial Load  
+    window.onload = () => {  
+        renderProducts();  
+    };  
+</script>
+
+</body>  
+</html> 
